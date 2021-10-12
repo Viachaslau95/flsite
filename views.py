@@ -1,13 +1,15 @@
-from flask import Flask, render_template, url_for, request, flash, session, redirect, abort
+import os
+from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
+from flask import Flask, url_for, request, flash, session, redirect, abort, g, render_template
+from flask_sqlalchemy import SQLAlchemy
 
-app = Flask(__name__)
-
-app.config['SECRET_KEY'] = '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'
+from models import app, db, Users
 
 menu = [
-        {"name": "Установка", "url": "install-flask"},
-        {"name": "Первое приложение", "url": "first-app"},
-        {"name": "Обратная связь", "url": "contact"},
+    {"name": "Установка", "url": "install-flask"},
+    {"name": "Первое приложение", "url": "first-app"},
+    {"name": "Обратная связь", "url": "contact"},
 ]
 
 
@@ -15,6 +17,28 @@ menu = [
 def index():
     print(url_for('index'))
     return render_template('index.html', menu=menu)
+
+
+@app.route("/register", methods=("POST", "GET"))
+def register():
+    if request.method == "POST":
+        username = request.form['username']
+        psw = request.form['psw']
+
+        db.session.add(Users(username, psw))
+        db.session.commit()
+
+        # name = request.form['name']
+        # old = request.form['old']
+        # city = request.form['city']
+        #
+        # db.session.add(Profiles(name, old, city))
+        # db.session.commit()
+        # except:
+        #     db.session.rollback()
+        #     print("Ошибка добавления в БД")
+        return redirect("/profiles.html")
+    return render_template("/register.html", title="Регистрация", menu=menu)
 
 
 @app.route("/about")
